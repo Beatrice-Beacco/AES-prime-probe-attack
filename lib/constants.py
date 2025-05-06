@@ -1,4 +1,4 @@
 LINES_NUM: int = 64
 FIRST_PLAINTEXT_BITS = [f"0x{i:X}" for i in range(16)]
+CACHE_MISSES_THRESHOLD: float = 0.3
 PLAINTEXT_BYTE_NUM: int = 16
-CACHE_MISS_TRESHOLD: int = 0.2

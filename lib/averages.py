@@ -41,7 +41,7 @@ def compute_plaintext_averages_for_byte(plaintext_samples: list[AESInvocationDat
     for sample in plaintext_samples:
         bytes_data = bytes.fromhex(sample.plaintext) # Convert hex string to bytes
         shifted_bytes = [b >> 4 for b in bytes_data] # Shift on the right by 4 to discard the last 4 bits of each byte
-        most_significant_bits = f"0x{shifted_bytes[byte_index]:X}" # Take the 4 msb of the first byte and convert to hex
+        most_significant_bits = f"0x{shifted_bytes[byte_index]:X}" # Take the 4 msb of the index byte and convert to hex
         grouped_plaintext_samples[most_significant_bits].append(sample)
     
     # Calculate the average of each plaintext group

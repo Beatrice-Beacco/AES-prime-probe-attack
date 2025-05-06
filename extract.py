@@ -3,7 +3,7 @@ from typing import List
 from lib.averages import calculate_corrected_averages, compute_plaintext_averages_for_byte, compute_samples_average
 from lib.constants import PLAINTEXT_BYTE_NUM
 from lib.heatmap import generate_heatmap_from_averages
-from lib.key_recovery import extract_cache_misses_lines, recover_key_from_cache_misses_lines
+from lib.key_recovery import extract_cache_misses_lines, recover_msb_key_from_cache_misses_lines
 from lib.parser import AESInvocationData, parse_aes_input_file
 
 aes_output_file_path = "output.txt"
@@ -28,8 +28,9 @@ if __name__ == '__main__':
         cache_misses_lines = extract_cache_misses_lines(corrected_plaintext_samples_averages)
         print(f"Cache misses lines: {cache_misses_lines}")
         # TODO: Calculate the partial key
-        partial_key = recover_key_from_cache_misses_lines(corrected_plaintext_samples_averages, cache_misses_lines)
+        partial_key = recover_msb_key_from_cache_misses_lines(cache_misses_lines, byte_index)
         print(f"Partial key: {partial_key}")
+        recovered_key.append(partial_key)
     
     print(f"Recovered key: {recovered_key}")
     # TODO: output heatmaps data + key to a file heatmaps.txt
