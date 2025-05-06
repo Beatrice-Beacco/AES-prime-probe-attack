@@ -23,12 +23,12 @@ if __name__ == '__main__':
 
     # Calculate corrected averages
     for sample_averages in plaintext_samples_averages:
-        for cycle_num, cycle_average in enumerate(sample_averages.averages):
-            sample_averages.averages[cycle_num] = cycle_average - all_samples_averages[cycle_num]
+        for cache_line_num, cache_line_average in enumerate(sample_averages.averages):
+            sample_averages.averages[cache_line_num] = cache_line_average - all_samples_averages[cache_line_num]
     #print(f"Corrected averages \n {[f"Plaintext: {key}, Averages: {sample_averages}" for key, sample_averages in plaintext_samples_averages.items()]}")
             
     # Generate heat maps on corrected averages
-    # Heatmap data: row = 4 plaintext bits, column = cycle measurement
+    # Heatmap data: row = 4 plaintext bits, column = line measurement
     # Generate a matrix of 16 rows 64 columns with the corrected averages data
     heatmap_data = list(range(len(FIRST_PLAINTEXT_BITS)))
     for plaintext_bit, sample_averages in enumerate(plaintext_samples_averages):
@@ -42,13 +42,13 @@ if __name__ == '__main__':
     plt.savefig(heatmap_output_file_path)
 
     # Get cache misses and obtain partial key
-    # For each corrected average, find the cycle where the measurement exceeds the threshold
-    # Index of the list = plaintext bit integer value, value at that index = cache miss cycle
-    cache_misses_cycles = list(range(len(FIRST_PLAINTEXT_BITS)))
+    # For each corrected average, find the line where the measurement exceeds the threshold
+    # Index of the list = plaintext bit integer value, value at that index = cache miss line
+    cache_misses_lines = list(range(len(FIRST_PLAINTEXT_BITS)))
     for plaintex_bit, corrected_average in enumerate(plaintext_samples_averages):
-        cache_miss_cycle = [cycle_index for cycle_index, average in enumerate(corrected_average.averages) if average > CACHE_MISS_TRESHOLD]
-        cache_misses_cycles[plaintex_bit] = cache_miss_cycle[0] if cache_miss_cycle else None
-    print(f"Cache misses cycles: {cache_misses_cycles}")
+        cache_miss_line = [line_index for line_index, average in enumerate(corrected_average.averages) if average > CACHE_MISS_TRESHOLD]
+        cache_misses_lines[plaintex_bit] = cache_miss_line[0] if cache_miss_line else None
+    print(f"Cache misses lines: {cache_misses_lines}")
     
     # TODO: calculate the key (somehow idk)
     # TODO: output heatmaps data + key to a file heatmaps.txt

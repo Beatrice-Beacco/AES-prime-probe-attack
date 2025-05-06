@@ -3,7 +3,7 @@ from dataclasses import dataclass
 import statistics
 from typing import Dict
 
-from lib.constants import CYCLES_NUM, FIRST_PLAINTEXT_BITS
+from lib.constants import LINES_NUM, FIRST_PLAINTEXT_BITS
 from lib.parser import AESInvocationData
 
 
@@ -20,16 +20,16 @@ class PlaintextAverage(object):
 
 
 def compute_samples_average(samples: list[AESInvocationData]) -> list[float]:
-    # Create list of the size of the number of cycles (64 elements) and initialize it with empty lists
-    grouped_samples_measurements: list[list[int]] = [[] for _ in range(CYCLES_NUM)] 
+    # Create list of the size of the number of lines (64 elements) and initialize it with empty lists
+    grouped_samples_measurements: list[list[int]] = [[] for _ in range(LINES_NUM)] 
 
-    # Group elements in the same cycle for all samples. Elements of the same cycle will be added to the same list
+    # Group elements in the same line for all samples. Elements of the same line will be added to the same list
     for sample in samples:
-        for index, cycle_measurement in enumerate(sample.cycle_measurements):
-            grouped_samples_measurements[index].append(cycle_measurement)
+        for index, cache_line_measurement in enumerate(sample.line_measurements):
+            grouped_samples_measurements[index].append(cache_line_measurement)
     
-    # Calculate the average of each grouped cycle measurements
-    samples_averages: list[float] = [statistics.mean(cycle_measurements) for cycle_measurements in grouped_samples_measurements]
+    # Calculate the average of each grouped line measurements
+    samples_averages: list[float] = [statistics.mean(cache_line_measurements) for cache_line_measurements in grouped_samples_measurements]
     return samples_averages
 
 def compute_plaintext_averages(plaintext_samples: list[AESInvocationData]) -> list[PlaintextAverage]:
