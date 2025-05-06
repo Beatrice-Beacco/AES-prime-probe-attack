@@ -1,7 +1,6 @@
 
 from dataclasses import dataclass
 import statistics
-from typing import Dict
 
 from lib.constants import LINES_NUM, FIRST_PLAINTEXT_BITS
 from lib.parser import AESInvocationData
@@ -32,7 +31,7 @@ def compute_samples_average(samples: list[AESInvocationData]) -> list[float]:
     samples_averages: list[float] = [statistics.mean(cache_line_measurements) for cache_line_measurements in grouped_samples_measurements]
     return samples_averages
 
-def compute_plaintext_averages(plaintext_samples: list[AESInvocationData]) -> list[PlaintextAverage]:
+def compute_plaintext_averages_for_byte(plaintext_samples: list[AESInvocationData], byte_index: int) -> list[PlaintextAverage]:
     # Create the hashmap for each of the 16 starting plaintext bits
     grouped_plaintext_samples: dict[str, list[AESInvocationData]] = {}
     for plaintext_bits in FIRST_PLAINTEXT_BITS:
@@ -42,7 +41,7 @@ def compute_plaintext_averages(plaintext_samples: list[AESInvocationData]) -> li
     for sample in plaintext_samples:
         bytes_data = bytes.fromhex(sample.plaintext) # Convert hex string to bytes
         shifted_bytes = [b >> 4 for b in bytes_data] # Shift on the right by 4 to discard the last 4 bits of each byte
-        most_significant_bits = f"0x{shifted_bytes[0]:X}" # Take the 4 msb of the first byte and convert to hex
+        most_significant_bits = f"0x{shifted_bytes[byte_index]:X}" # Take the 4 msb of the first byte and convert to hex
         grouped_plaintext_samples[most_significant_bits].append(sample)
     
     # Calculate the average of each plaintext group
@@ -59,3 +58,13 @@ def compute_plaintext_averages(plaintext_samples: list[AESInvocationData]) -> li
     
     
     return plaintext_averages
+
+def calculate_corrected_averages(plaintext_samples_averages: list[PlaintextAverage], all_samples_averages: list[float]) -> list[PlaintextAverage]:
+    # Deep copy the plaintext samples averages
+    plaintext_samples_averages_copy = [PlaintextAverage(sample.hex_plaintext, sample.samples_crypto_data, sample.averages.copy()) for sample in plaintext_samples_averages]
+
+    for sample_averages in plaintext_samples_averages_copy:
+        for cache_line_num, cache_line_average in enumerate(sample_averages.averages):
+            sample_averages.averages[cache_line_num] = cache_line_average - all_samples_averages[cache_line_num]
+            
+    return plaintext_samples_averages_copy

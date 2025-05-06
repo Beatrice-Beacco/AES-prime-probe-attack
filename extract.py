@@ -1,12 +1,12 @@
 
 from typing import List
-from lib.averages import compute_plaintext_averages, compute_samples_average
-from lib.constants import CACHE_MISS_TRESHOLD, FIRST_PLAINTEXT_BITS
+from lib.averages import calculate_corrected_averages, compute_plaintext_averages_for_byte, compute_samples_average
+from lib.constants import PLAINTEXT_BYTE_NUM
+from lib.heatmap import generate_heatmap_from_averages
+from lib.key_recovery import extract_cache_misses_lines, recover_key_from_cache_misses_lines
 from lib.parser import AESInvocationData, parse_aes_input_file
-import matplotlib.pyplot as plt
 
 aes_output_file_path = "output.txt"
-heatmap_output_file_path = "heatmap.png"
 
 if __name__ == '__main__':
     
@@ -15,40 +15,21 @@ if __name__ == '__main__':
 
     # Calculate the average of all samples
     all_samples_averages = compute_samples_average(aes_data)
-    #print(f"All samples averages: {all_samples_averages}")
 
-    # Average of each of the 16 possible 4 starting bits samples
-    plaintext_samples_averages = compute_plaintext_averages(aes_data)
-    #print(f"Plaintext samples averages: {plaintext_samples_averages}")
-
-    # Calculate corrected averages
-    for sample_averages in plaintext_samples_averages:
-        for cache_line_num, cache_line_average in enumerate(sample_averages.averages):
-            sample_averages.averages[cache_line_num] = cache_line_average - all_samples_averages[cache_line_num]
-    #print(f"Corrected averages \n {[f"Plaintext: {key}, Averages: {sample_averages}" for key, sample_averages in plaintext_samples_averages.items()]}")
-            
-    # Generate heat maps on corrected averages
-    # Heatmap data: row = 4 plaintext bits, column = line measurement
-    # Generate a matrix of 16 rows 64 columns with the corrected averages data
-    heatmap_data = list(range(len(FIRST_PLAINTEXT_BITS)))
-    for plaintext_bit, sample_averages in enumerate(plaintext_samples_averages):
-        heatmap_data[plaintext_bit] = sample_averages.averages
-    print(f"Heatmap data: {heatmap_data}")
+    recovered_key: list[str] = []
+    for byte_index in range(PLAINTEXT_BYTE_NUM):
+        # Average of each of the 16 possible 4 starting bits samples of the current byte
+        plaintext_samples_averages = compute_plaintext_averages_for_byte(aes_data, byte_index) 
+        # Calculate corrected averages for the current byte
+        corrected_plaintext_samples_averages = calculate_corrected_averages(plaintext_samples_averages, all_samples_averages) 
+        # Generate heat map .png on the corrected averages
+        generate_heatmap_from_averages(corrected_plaintext_samples_averages, byte_index)
+        # Get cache misses
+        cache_misses_lines = extract_cache_misses_lines(corrected_plaintext_samples_averages)
+        print(f"Cache misses lines: {cache_misses_lines}")
+        # TODO: Calculate the partial key
+        partial_key = recover_key_from_cache_misses_lines(corrected_plaintext_samples_averages, cache_misses_lines)
+        print(f"Partial key: {partial_key}")
     
-    plt.xlabel('Cache Set')
-    plt.ylabel('Plaintext Byte')
-    plt.title('AES Cache Access Heatmap') 
-    plt.imshow(heatmap_data, cmap='hot', interpolation='nearest')
-    plt.savefig(heatmap_output_file_path)
-
-    # Get cache misses and obtain partial key
-    # For each corrected average, find the line where the measurement exceeds the threshold
-    # Index of the list = plaintext bit integer value, value at that index = cache miss line
-    cache_misses_lines = list(range(len(FIRST_PLAINTEXT_BITS)))
-    for plaintex_bit, corrected_average in enumerate(plaintext_samples_averages):
-        cache_miss_line = [line_index for line_index, average in enumerate(corrected_average.averages) if average > CACHE_MISS_TRESHOLD]
-        cache_misses_lines[plaintex_bit] = cache_miss_line[0] if cache_miss_line else None
-    print(f"Cache misses lines: {cache_misses_lines}")
-    
-    # TODO: calculate the key (somehow idk)
+    print(f"Recovered key: {recovered_key}")
     # TODO: output heatmaps data + key to a file heatmaps.txt
