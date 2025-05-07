@@ -2,7 +2,7 @@
 from dataclasses import dataclass
 import statistics
 
-from lib.constants import LINES_NUM, FIRST_PLAINTEXT_BITS
+from lib.constants import SETS_NUM, FIRST_PLAINTEXT_BITS
 from lib.parser import AESInvocationData
 
 
@@ -20,7 +20,7 @@ class PlaintextAverage(object):
 
 def compute_samples_average(samples: list[AESInvocationData]) -> list[float]:
     # Create list of the size of the number of lines (64 elements) and initialize it with empty lists
-    grouped_samples_measurements: list[list[int]] = [[] for _ in range(LINES_NUM)] 
+    grouped_samples_measurements: list[list[int]] = [[] for _ in range(SETS_NUM)] 
 
     # Group elements in the same line for all samples. Elements of the same line will be added to the same list
     for sample in samples:
