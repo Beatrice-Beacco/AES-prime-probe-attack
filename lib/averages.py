@@ -69,9 +69,7 @@ def calculate_corrected_averages(
 ) -> list[PlaintextAverage]:
     # Deep copy the plaintext samples averages
     plaintext_samples_averages_copy = [
-        PlaintextAverage(
-            sample.hex_plaintext, sample.samples_crypto_data, sample.averages.copy()
-        )
+        PlaintextAverage(sample.hex_plaintext, sample.averages.copy())
         for sample in plaintext_samples_averages
     ]
 
