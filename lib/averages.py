@@ -4,20 +4,10 @@ import statistics
 from lib.constants import SETS_NUM, FIRST_PLAINTEXT_BITS
 from lib.parser import AESInvocationData
 
-
-@dataclass
-class SampleCryptoData(object):
-    plaintext: bytes
-    ciphertext: bytes
+type PlaintextAverages = list[float]
 
 
-@dataclass
-class PlaintextAverage(object):
-    hex_plaintext: str
-    averages: list[float]
-
-
-def compute_samples_average(samples: list[AESInvocationData]) -> list[float]:
+def compute_samples_average(samples: list[AESInvocationData]) -> PlaintextAverages:
     # Create list of the size of the number of lines (64 elements) and initialize it with empty lists
     grouped_samples_measurements: list[list[int]] = [[] for _ in range(SETS_NUM)]
 
@@ -36,7 +26,7 @@ def compute_samples_average(samples: list[AESInvocationData]) -> list[float]:
 
 def compute_plaintext_averages_for_byte(
     plaintext_samples: list[AESInvocationData], byte_index: int
-) -> list[PlaintextAverage]:
+) -> list[PlaintextAverages]:
     # Create the hashmap for each of the 16 starting plaintext bits
     grouped_plaintext_samples: dict[str, list[AESInvocationData]] = {}
     for plaintext_bits in FIRST_PLAINTEXT_BITS:
@@ -56,26 +46,22 @@ def compute_plaintext_averages_for_byte(
     for plaintext_bits, plaintext_samples in grouped_plaintext_samples.items():
         averages = compute_samples_average(plaintext_samples)
         plaintext_bits_int = int(plaintext_bits, 16)
-        plaintext_averages[plaintext_bits_int] = PlaintextAverage(
-            hex_plaintext=plaintext_bits, averages=averages
-        )
-
+        plaintext_averages[plaintext_bits_int] = averages
     return plaintext_averages
 
 
 def calculate_corrected_averages(
-    plaintext_samples_averages: list[PlaintextAverage],
+    plaintext_samples_averages: list[list[float]],
     all_samples_averages: list[float],
-) -> list[PlaintextAverage]:
+) -> list[PlaintextAverages]:
     # Deep copy the plaintext samples averages
     plaintext_samples_averages_copy = [
-        PlaintextAverage(sample.hex_plaintext, sample.averages.copy())
-        for sample in plaintext_samples_averages
+        averages.copy() for averages in plaintext_samples_averages
     ]
 
     for sample_averages in plaintext_samples_averages_copy:
-        for cache_line_num, cache_line_average in enumerate(sample_averages.averages):
-            sample_averages.averages[cache_line_num] = (
+        for cache_line_num, cache_line_average in enumerate(sample_averages):
+            sample_averages[cache_line_num] = (
                 cache_line_average - all_samples_averages[cache_line_num]
             )
 

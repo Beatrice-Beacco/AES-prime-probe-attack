@@ -1,4 +1,4 @@
-from lib.averages import PlaintextAverage
+from lib.averages import PlaintextAverages
 from lib.constants import (
     CACHE_OFFSET,
     FIRST_PLAINTEXT_BITS,
@@ -10,12 +10,12 @@ from collections import Counter
 
 # For each corrected average, find the line where the measurement exceeds the threshold
 # Index of the list = plaintext bit integer value, value at that index = cache miss line
-def extract_cache_misses_lines(corrected_averages: list[PlaintextAverage]) -> list[int]:
+def extract_cache_misses_lines(
+    corrected_averages: list[PlaintextAverages],
+) -> list[int]:
     cache_misses_lines = list(range(len(FIRST_PLAINTEXT_BITS)))
     for plaintex_bit, corrected_average in enumerate(corrected_averages):
-        max_measurement_line_index = corrected_average.averages.index(
-            max(corrected_average.averages)
-        )
+        max_measurement_line_index = corrected_average.index(max(corrected_average))
         cache_misses_lines[plaintex_bit] = max_measurement_line_index
     return cache_misses_lines
 

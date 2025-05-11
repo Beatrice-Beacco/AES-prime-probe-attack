@@ -39,7 +39,7 @@ if __name__ == "__main__":
             corrected_plaintext_samples_averages
         )
         print(f"Cache misses lines: {cache_misses_lines}")
-        # TODO: Calculate the partial key
+        # Calculate the partial key
         partial_key = recover_msb_key_from_cache_misses_lines(
             cache_misses_lines, byte_index
         )
