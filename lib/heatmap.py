@@ -32,7 +32,6 @@ def generate_heatmap_from_averages(averages: list[PlaintextAverages], byte_index
         heatmap_data[plaintext_bit] = sample_averages
     plt.xlabel("Cache Set")
     plt.ylabel("Plaintext Bits")
-    plt.yticks(ticks=range(len(y_labels)), labels=y_labels)
     plt.title("AES Cache Access Heatmap")
     plt.imshow(
         heatmap_data,
