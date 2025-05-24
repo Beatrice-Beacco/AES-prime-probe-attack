@@ -13,15 +13,15 @@ from collections import Counter
 def extract_cache_misses_lines(
     corrected_averages: list[PlaintextAverages],
 ) -> list[int]:
-    cache_misses_lines = list(range(len(FIRST_PLAINTEXT_BITS)))
+    cache_misses_sets = list(range(len(FIRST_PLAINTEXT_BITS)))
     for plaintex_bit, corrected_average in enumerate(corrected_averages):
-        max_measurement_line_index = corrected_average.index(max(corrected_average))
-        cache_misses_lines[plaintex_bit] = max_measurement_line_index
-    return cache_misses_lines
+        max_measurement_set_index = corrected_average.index(max(corrected_average))
+        cache_misses_sets[plaintex_bit] = max_measurement_set_index
+    return cache_misses_sets
 
 
 def recover_msb_key_from_cache_misses_lines(
-    cache_misses_lines: list[int], byte_index: int
+    cache_misses_sets: list[int], byte_index: int
 ) -> str:
     # Determine the base cache set for the T-table used by this byte. Each table has 16 cache sets, we have 4 tables.
     # Take into account that the first table starts at table index 16*2 + 2. We have both a table number offset of 2 and a initial table set offset of 2.
@@ -32,7 +32,7 @@ def recover_msb_key_from_cache_misses_lines(
 
     # Iterate over all 16 possible plaintext bits
     for plaintext_int in range(PLAINTEXT_BYTE_NUM):
-        cache_miss_set = cache_misses_lines[plaintext_int]
+        cache_miss_set = cache_misses_sets[plaintext_int]
         # Handle wrap around
         table_set_index = 0
         if cache_miss_set < base_table_set:
@@ -46,7 +46,7 @@ def recover_msb_key_from_cache_misses_lines(
         candidate = table_set_index ^ plaintext_int
         candidates.append(candidate)
 
-    # Find the most common valid candidate (mode)
+    # Find the most common valid candidate
     if not candidates:
         raise ValueError("No valid candidates found for the key recovery.")
 

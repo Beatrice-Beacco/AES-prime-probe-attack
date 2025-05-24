@@ -35,13 +35,13 @@ if __name__ == "__main__":
         # Generate heat map .png on the corrected averages
         generate_heatmap_from_averages(corrected_plaintext_samples_averages, byte_index)
         # Get cache misses
-        cache_misses_lines = extract_cache_misses_lines(
+        cache_misses_sets = extract_cache_misses_lines(
             corrected_plaintext_samples_averages
         )
-        print(f"Cache misses lines: {cache_misses_lines}")
+        print(f"Cache misses lines: {cache_misses_sets}")
         # Calculate the partial key
         partial_key = recover_msb_key_from_cache_misses_lines(
-            cache_misses_lines, byte_index
+            cache_misses_sets, byte_index
         )
         print(f"Partial key: {partial_key}")
         recovered_key.append(partial_key)
@@ -50,4 +50,5 @@ if __name__ == "__main__":
 
     # Output heatmaps data + key to a file key.txt
     with open("key.txt", "w") as key_file:
-        key_file.write(str(recovered_key))
+        key_file.write(f"Heatmaps data: {str(corrected_plaintext_samples_averages)}\n")
+        key_file.write(f"Recovered key bits: {str(recovered_key)}")

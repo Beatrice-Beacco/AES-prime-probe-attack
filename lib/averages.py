@@ -1,4 +1,3 @@
-from dataclasses import dataclass
 import statistics
 
 from lib.constants import SETS_NUM, FIRST_PLAINTEXT_BITS
