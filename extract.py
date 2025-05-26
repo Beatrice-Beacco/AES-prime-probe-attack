@@ -48,7 +48,6 @@ if __name__ == "__main__":
 
     print(f"Recovered key: {recovered_key}")
 
-    # Output heatmaps data + key to a file key.txt
+    # Output recovered key msb bits of each byte to a file key.txt
     with open("key.txt", "w") as key_file:
-        key_file.write(f"Heatmaps data: {str(corrected_plaintext_samples_averages)}\n")
-        key_file.write(f"Recovered key bits: {str(recovered_key)}")
+        key_file.write(f"{str(recovered_key)}")
